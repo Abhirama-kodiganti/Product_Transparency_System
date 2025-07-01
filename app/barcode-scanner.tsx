@@ -63,20 +63,8 @@ export default function BarcodeScannerScreen() {
       return;
     }
     
-    Alert.alert(
-      'Barcode Scanned Successfully!',
-      `Type: ${typeName}\nData: ${data}`,
-      [
-        {
-          text: 'Scan Again',
-          onPress: () => setScanned(false),
-        },
-        {
-          text: 'Search Product',
-          onPress: () => handleSearchProduct(data),
-        },
-      ]
-    );
+    // Instead of showing a success alert, search for the product immediately
+    handleSearchProduct(data);
   };
 
   const handleSearchProduct = async (barcodeData: string) => {
@@ -93,6 +81,7 @@ export default function BarcodeScannerScreen() {
               text: 'View Details',
               onPress: () => {
                 // Navigate to product details page
+                router.push({ pathname: '/product', params: { product: JSON.stringify(result.product) } });
                 setScanned(false);
               },
             },
