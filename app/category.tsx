@@ -1,10 +1,28 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
-import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from 'react';
+import { Image, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function CategoryScreen() {
   const router = useRouter();
   const { category } = useLocalSearchParams<{ category: string }>();
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (category) {
+      setLoading(true);
+      fetch(`https://in.openfoodfacts.org/category/${category}.json`)
+        .then(res => res.json())
+        .then(data => {
+          setProducts(data.products || []);
+          setLoading(false);
+        });
+    } else {
+      setProducts([]);
+      setLoading(false);
+    }
+  }, [category]);
 
   const biscuitTypes = [
     "Plain, Sweet Biscuits",
@@ -14,13 +32,6 @@ export default function CategoryScreen() {
     "Savory Biscuits",
     "Filled Biscuits",
     "Low Sugar",
-  ];
-
-  const products = [
-    { name: "Bebe Burp Choco Multigrain Coo...", rating: "3.5", color: "#8b5cf6" },
-    { name: "Bebe Burp Oats & Raisins Cookies", rating: "3.4", color: "#8b5cf6" },
-    { name: "Ancient Roots Healthier Multi...", rating: "3.3", color: "#22c55e" },
-    { name: "Ancient Roots Healthier Almo...", rating: "3.1", color: "#f59e0b" },
   ];
 
   return (
@@ -73,25 +84,26 @@ export default function CategoryScreen() {
 
             {/* Products Grid */}
             <View style={styles.productsGrid}>
-              {products.map((product, index) => (
-                <Link key={index} href="/product" asChild>
-                  <TouchableOpacity style={styles.productCard}>
-                    <View style={styles.ratingBadge}>
-                      <Text style={styles.ratingText}>{product.rating}</Text>
-                    </View>
-                    <View style={[styles.productImage, { backgroundColor: product.color }]} />
-                    <Text style={styles.productName}>{product.name}</Text>
-                    <View style={styles.productActions}>
-                      <TouchableOpacity style={styles.actionButton}>
-                        <Ionicons name="heart-outline" size={16} color="#333" />
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.actionButton}>
-                        <Ionicons name="add-circle-outline" size={16} color="#333" />
-                      </TouchableOpacity>
-                    </View>
-                  </TouchableOpacity>
-                </Link>
-              ))}
+              {loading ? (
+                <Text>Loading...</Text>
+              ) : products.length === 0 ? (
+                <Text>No products found.</Text>
+              ) : (
+                products.map((product, index) => (
+                  <Link key={index} href={{ pathname: "/product", params: { barcode: product.code } }} asChild>
+                    <TouchableOpacity style={styles.productCard}>
+                      {product.image_front_url ? (
+                        <View style={{ alignItems: 'center' }}>
+                          <Image source={{ uri: product.image_front_url }} style={{ width: 80, height: 80, borderRadius: 8, marginBottom: 8 }} />
+                        </View>
+                      ) : null}
+                      <Text style={styles.productName}>{product.product_name || product.name}</Text>
+                      <Text style={styles.productBrand}>{product.brands}</Text>
+                      <Text style={styles.productVariant}>{product.quantity}</Text>
+                    </TouchableOpacity>
+                  </Link>
+                ))
+              )}
             </View>
           </ScrollView>
         </View>
@@ -216,27 +228,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  ratingBadge: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    backgroundColor: "#22c55e",
-    borderRadius: 15,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    zIndex: 1,
-  },
-  ratingText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  productImage: {
-    width: "100%",
-    height: 80,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
   productName: {
     fontSize: 14,
     fontWeight: "600",
@@ -244,11 +235,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     lineHeight: 18,
   },
-  productActions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  productBrand: {
+    fontSize: 12,
+    color: "#666",
   },
-  actionButton: {
-    padding: 5,
+  productVariant: {
+    fontSize: 12,
+    color: "#666",
   },
 }); 

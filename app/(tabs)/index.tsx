@@ -1,8 +1,42 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
+import { useEffect, useState } from 'react';
 import { Alert, Image, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import openfoodfacts from '../../openfoodfacts_india.json';
+
+// Pretty name mapping for categories
+const CATEGORY_PRETTY_NAMES: Record<string, string> = {
+  biscuits: 'Biscuits',
+  chocolates: 'Chocolates',
+  'carbonated drinks': 'Carbonated Drinks',
+  dairies: 'Dairies',
+  'instant-noodles': 'Instant Noodles',
+  snacks: 'Snacks',
+  'breakfast-cereals': 'Breakfast Cereals',
+  cakes: 'Cakes',
+  'dry-fruits': 'Dry Fruits',
+  meats: 'Meats',
+  rices: 'Rices',
+  teas: 'Teas',
+  coffees: 'Coffees',
+  'dietary-supplements': 'Dietary Supplements',
+  soups: 'Soups',
+  spices: 'Spices',
+  sauces: 'Sauces',
+  oils: 'Oils',
+  'baby-foods': 'Baby Foods',
+};
+
+// Placeholder image for new categories
+const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/120x120.png?text=Food';
 
 export default function HomeScreen() {
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    setCategories(Object.keys(openfoodfacts));
+  }, []);
+
   const handleScanPress = () => {
     Alert.alert(
       'Choose Scan Type',
@@ -117,97 +151,42 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>All Categories</Text>
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.categoriesGrid}>
-              {/* Category 1: Biscuits */}
-              <Link href={{ pathname: "/category", params: { category: "Biscuits" } }} asChild>
-                <TouchableOpacity style={styles.categoryItem}>
-                  <Image source={{ uri: "https://i.pinimg.com/736x/8a/c1/af/8ac1af98cae35cad039f198c07e18d52.jpg" }} style={styles.categoryImage} />
-                  <Text style={styles.categoryLabel}>Biscuits</Text>
-                </TouchableOpacity>
-              </Link>
-              {/* Category 2: Breakfast */}
-              <Link href={{ pathname: "/category", params: { category: "Breakfast" } }} asChild>
-                <TouchableOpacity style={styles.categoryItem}>
-                  <Image source={{ uri: "https://i.pinimg.com/736x/08/61/1d/08611db6ee937e1015bf8539e8a003c8.jpg" }} style={styles.categoryImage} />
-                  <Text style={styles.categoryLabel}>Breakfast</Text>
-                </TouchableOpacity>
-              </Link>
-              {/* Category 3: Chocolate */}
-              <Link href={{ pathname: "/category", params: { category: "Chocolate" } }} asChild>
-                <TouchableOpacity style={styles.categoryItem}>
-                  <Image source={{ uri: "https://i.pinimg.com/736x/98/05/ba/9805ba59e3a7e7e5bd206db1fbd0fc22.jpg" }} style={styles.categoryImage} />
-                  <Text style={styles.categoryLabel}>Chocolate</Text>
-                </TouchableOpacity>
-              </Link>
-              {/* Category 4: Cold Drink */}
-              <Link href={{ pathname: "/category", params: { category: "Cold Drink" } }} asChild>
-                <TouchableOpacity style={styles.categoryItem}>
-                  <Image source={{ uri: "https://i.pinimg.com/736x/d0/f8/52/d0f8520ad3485c9d219eac8963cdf9de.jpg" }} style={styles.categoryImage} />
-                  <Text style={styles.categoryLabel}>Cold Drink</Text>
-                </TouchableOpacity>
-              </Link>
-              {/* Category 5: Dairy and Bread */}
-              <Link href={{ pathname: "/category", params: { category: "Dairy and Bread" } }} asChild>
-                <TouchableOpacity style={styles.categoryItem}>
-                  <Image source={{ uri: "https://i.pinimg.com/736x/82/1d/6c/821d6c6e7d451f902fc8b00b70376ab8.jpg" }} style={styles.categoryImage} />
-                  <Text style={styles.categoryLabel}>Dairy and Bread</Text>
-                </TouchableOpacity>
-              </Link>
-              {/* Category 6: Instant Foods */}
-              <Link href={{ pathname: "/category", params: { category: "Instant Foods" } }} asChild>
-                <TouchableOpacity style={styles.categoryItem}>
-                  <Image source={{ uri: "https://i.pinimg.com/736x/a0/00/a3/a000a3ef09fdc66543f52452eb25a177.jpg" }} style={styles.categoryImage} />
-                  <Text style={styles.categoryLabel}>Instant Foods</Text>
-                </TouchableOpacity>
-              </Link>
-              {/* Category 7: Munchies */}
-              <Link href={{ pathname: "/category", params: { category: "Munchies" } }} asChild>
-                <TouchableOpacity style={styles.categoryItem}>
-                  <Image source={{ uri: "https://i.pinimg.com/736x/ee/2c/31/ee2c31e44ffb3a23919651bb88b18493.jpg" }} style={styles.categoryImage} />
-                  <Text style={styles.categoryLabel}>Munchies</Text>
-                </TouchableOpacity>
-              </Link>
-              {/* Category 8: Cake and Bakes */}
-              <Link href={{ pathname: "/category", params: { category: "Cake and Bakes" } }} asChild>
-                <TouchableOpacity style={styles.categoryItem}>
-                  <Image source={{ uri: "https://i.pinimg.com/736x/1e/51/71/1e517173fd4ae12404e5c4a0a7d5a34a.jpg" }} style={styles.categoryImage} />
-                  <Text style={styles.categoryLabel}>Cake and Bakes</Text>
-                </TouchableOpacity>
-              </Link>
-              {/* Category 9: Dry Fruits */}
-              <Link href={{ pathname: "/category", params: { category: "Dry Fruits" } }} asChild>
-                <TouchableOpacity style={styles.categoryItem}>
-                  <Image source={{ uri: "https://i.pinimg.com/736x/69/fe/61/69fe61881877e16b144b3e1ff4b5d209.jpg" }} style={styles.categoryImage} />
-                  <Text style={styles.categoryLabel}>Dry Fruits</Text>
-                </TouchableOpacity>
-              </Link>
-              {/* Category 10: Meat */}
-              <Link href={{ pathname: "/category", params: { category: "Meat" } }} asChild>
-                <TouchableOpacity style={styles.categoryItem}>
-                  <Image source={{ uri: "https://i.pinimg.com/736x/ba/95/11/ba9511393ee20b62a7b4b33bfc244c1e.jpg" }} style={styles.categoryImage} />
-                  <Text style={styles.categoryLabel}>Meat</Text>
-                </TouchableOpacity>
-              </Link>
-              {/* Category 11: Rice */}
-              <Link href={{ pathname: "/category", params: { category: "Rice" } }} asChild>
-                <TouchableOpacity style={styles.categoryItem}>
-                  <Image source={{ uri: "https://i.pinimg.com/736x/31/38/1c/31381ce7c94e70ab2d5ad2b9603724d7.jpg" }} style={styles.categoryImage} />
-                  <Text style={styles.categoryLabel}>Rice</Text>
-                </TouchableOpacity>
-              </Link>
-              {/* Category 12: Tea */}
-              <Link href={{ pathname: "/category", params: { category: "Tea" } }} asChild>
-                <TouchableOpacity style={styles.categoryItem}>
-                  <Image source={{ uri: "https://i.pinimg.com/736x/2a/9a/08/2a9a0823cecf96a85b934decc6e42ebc.jpg" }} style={styles.categoryImage} />
-                  <Text style={styles.categoryLabel}>Tea and Coffee</Text>
-                </TouchableOpacity>
-              </Link>
-              {/* Category 13: Supplements */}
-              <Link href={{ pathname: "/category", params: { category: "Supplements" } }} asChild>
-                <TouchableOpacity style={styles.categoryItem}>
-                  <Image source={{ uri: "https://i.pinimg.com/736x/41/59/70/41597014abbd14f298e4d1c97e973916.jpg" }} style={styles.categoryImage} />
-                  <Text style={styles.categoryLabel}>Supplements</Text>
-                </TouchableOpacity>
-              </Link>
+              {categories.map((catKey) => {
+                const prettyName = CATEGORY_PRETTY_NAMES[catKey] || catKey.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                // Use existing images for known categories, else placeholder
+                const imageMap: Record<string, string> = {
+                  biscuits: 'https://i.pinimg.com/736x/8a/c1/af/8ac1af98cae35cad039f198c07e18d52.jpg',
+                  chocolates: 'https://i.pinimg.com/736x/98/05/ba/9805ba59e3a7e7e5bd206db1fbd0fc22.jpg',
+                  'Carbonated drinks': 'https://i.pinimg.com/736x/68/da/1e/68da1ee88260795007a012089d4e0f20.jpg',
+                  dairies: 'https://i.pinimg.com/736x/82/1d/6c/821d6c6e7d451f902fc8b00b70376ab8.jpg',
+                  'instant-noodles': 'https://i.pinimg.com/736x/a0/00/a3/a000a3ef09fdc66543f52452eb25a177.jpg',
+                  snacks: 'https://i.pinimg.com/736x/ee/2c/31/ee2c31e44ffb3a23919651bb88b18493.jpg',
+                  cakes: 'https://i.pinimg.com/736x/1e/51/71/1e517173fd4ae12404e5c4a0a7d5a34a.jpg',
+                  'dry-fruits': 'https://i.pinimg.com/736x/69/fe/61/69fe61881877e16b144b3e1ff4b5d209.jpg',
+                  meats: 'https://i.pinimg.com/736x/ba/95/11/ba9511393ee20b62a7b4b33bfc244c1e.jpg',
+                  rices: 'https://i.pinimg.com/736x/31/38/1c/31381ce7c94e70ab2d5ad2b9603724d7.jpg',
+                  teas: 'https://i.pinimg.com/736x/29/29/a2/2929a2a06d03ef310aca48037e70486d.jpg',
+                  coffees : 'https://i.pinimg.com/736x/d8/49/a4/d849a419c843976b5f76c664a9cd1846.jpg',
+                  'breakfast-cereals' : 'https://i.pinimg.com/736x/1f/82/13/1f82134163392fe7905dc52096a22af3.jpg',
+                  'dietary-supplements':'https://i.pinimg.com/736x/c5/98/47/c598471f1143e3a9b81d922531a1f8a8.jpg',
+                  'soups':'https://i.pinimg.com/736x/52/ea/6c/52ea6cbd13bf295f61cb4fb789c76d47.jpg',
+                  'baby-foods': 'https://i.pinimg.com/736x/b7/bf/eb/b7bfeba2991e6e68dfb32b806fe04d1e.jpg',
+                  'spices':'https://i.pinimg.com/736x/9c/ff/11/9cff11bf12c4592fce88efb3acd71900.jpg',
+                  'sauces': 'https://i.pinimg.com/736x/02/75/cb/0275cb73be1ac1ba35c98f061a82a639.jpg',
+                  'oils':'https://i.pinimg.com/736x/dc/66/f1/dc66f17d09cd9bb2ba881dd4523cd20d.jpg',
+                  
+                  
+                };
+                const image = imageMap[catKey] || PLACEHOLDER_IMAGE;
+                return (
+                  <Link key={catKey} href={{ pathname: "/category", params: { category: catKey } }} asChild>
+                    <TouchableOpacity style={styles.categoryItem}>
+                      <Image source={{ uri: image }} style={styles.categoryImage} />
+                      <Text style={styles.categoryLabel}>{prettyName}</Text>
+                    </TouchableOpacity>
+                  </Link>
+                );
+              })}
             </View>
           </ScrollView>
         </View>

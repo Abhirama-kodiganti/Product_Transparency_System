@@ -2,7 +2,7 @@ import { formatProductInfo, getBarcodeTypeName, processBarcodeData, searchProduc
 import { Ionicons } from '@expo/vector-icons';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function BarcodeScannerScreen() {
@@ -13,6 +13,55 @@ export default function BarcodeScannerScreen() {
   const [barcodeType, setBarcodeType] = useState<string>('');
   const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
+  
+  // Add refs to prevent multiple scans
+  const isProcessingRef = useRef(false);
+  const lastScannedDataRef = useRef<string>('');
+  const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clean up timeout on unmount - MUST be before any early returns
+  useEffect(() => {
+    // Reset scanner when component mounts/unmounts
+    return () => {
+      if (scanTimeoutRef.current) {
+        clearTimeout(scanTimeoutRef.current);
+      }
+      // Clear processing flags on unmount
+      isProcessingRef.current = false;
+      lastScannedDataRef.current = '';
+    };
+  }, []);
+
+  // Add focus/blur effect to handle navigation
+  useEffect(() => {
+    const handleFocus = () => {
+      // Component is focused (user came back to scanner)
+      // Allow scanning after a brief delay
+      setTimeout(() => {
+        if (scanTimeoutRef.current) {
+          clearTimeout(scanTimeoutRef.current);
+        }
+        isProcessingRef.current = false;
+        lastScannedDataRef.current = '';
+        setScanned(false);
+        setIsSearching(false);
+      }, 500);
+    };
+
+    const handleBlur = () => {
+      // Component lost focus (user navigated away)
+      // Immediately stop scanning
+      isProcessingRef.current = true;
+      setScanned(true); // This will disable the camera
+    };
+
+    // Listen for focus events if available
+    // Note: This might need to be implemented differently based on your navigation setup
+    
+    return () => {
+      // Cleanup
+    };
+  }, []);
 
   if (!permission) {
     return <View style={styles.container} />;
@@ -40,6 +89,15 @@ export default function BarcodeScannerScreen() {
   }
 
   const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
+    // Prevent multiple scans of the same barcode
+    if (isProcessingRef.current || lastScannedDataRef.current === data || scanned) {
+      return;
+    }
+
+    // Set processing flag immediately
+    isProcessingRef.current = true;
+    lastScannedDataRef.current = data;
+    
     setScanned(true);
     setBarcodeData(data);
     setBarcodeType(type);
@@ -56,14 +114,14 @@ export default function BarcodeScannerScreen() {
         [
           {
             text: 'Scan Again',
-            onPress: () => setScanned(false),
+            onPress: () => resetScanner(),
           },
         ]
       );
       return;
     }
     
-    // Instead of showing a success alert, search for the product immediately
+    // Search for the product immediately
     handleSearchProduct(data);
   };
 
@@ -80,16 +138,25 @@ export default function BarcodeScannerScreen() {
             {
               text: 'View Details',
               onPress: () => {
+                // Immediately disable scanner
+                isProcessingRef.current = true;
+                setScanned(true);
+                
                 // Navigate to product details page
-                router.push({ pathname: '/product', params: { product: JSON.stringify(result.product) } });
-                setScanned(false);
+                router.push({ 
+                  pathname: '/product', 
+                  params: { product: JSON.stringify(result.product) } 
+                });
+                
+                // Don't reset scanner here - let it reset when user returns
               },
             },
             {
               text: 'Scan Again',
-              onPress: () => setScanned(false),
+              onPress: () => resetScanner(),
             },
-          ]
+          ],
+          { cancelable: false } // Prevent accidental dismissal
         );
       } else {
         Alert.alert(
@@ -100,14 +167,15 @@ export default function BarcodeScannerScreen() {
               text: 'Add Product',
               onPress: () => {
                 // Navigate to add product page
-                setScanned(false);
+                resetScanner();
               },
             },
             {
               text: 'Scan Again',
-              onPress: () => setScanned(false),
+              onPress: () => resetScanner(),
             },
-          ]
+          ],
+          { cancelable: false }
         );
       }
     } catch (error: any) {
@@ -117,19 +185,35 @@ export default function BarcodeScannerScreen() {
         [
           {
             text: 'OK',
-            onPress: () => setScanned(false),
+            onPress: () => resetScanner(),
           },
-        ]
+        ],
+        { cancelable: false }
       );
     } finally {
       setIsSearching(false);
     }
   };
 
-  const handleScanAgain = () => {
+  const resetScanner = () => {
     setScanned(false);
     setBarcodeData('');
     setBarcodeType('');
+    setIsSearching(false);
+    
+    // Reset processing state after a brief delay to prevent immediate re-scanning
+    if (scanTimeoutRef.current) {
+      clearTimeout(scanTimeoutRef.current);
+    }
+    
+    scanTimeoutRef.current = setTimeout(() => {
+      isProcessingRef.current = false;
+      lastScannedDataRef.current = '';
+    }, 2000); // Increased to 2 seconds for better UX
+  };
+
+  const handleScanAgain = () => {
+    resetScanner();
   };
 
   return (
@@ -137,7 +221,7 @@ export default function BarcodeScannerScreen() {
       <CameraView 
         style={styles.camera} 
         facing={facing}
-        onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+        onBarcodeScanned={scanned || isSearching ? undefined : handleBarcodeScanned}
       >
         {/* Header */}
         <View style={styles.header}>
@@ -164,7 +248,7 @@ export default function BarcodeScannerScreen() {
 
         {/* Bottom Controls */}
         <View style={styles.bottomContainer}>
-          {scanned && (
+          {scanned && !isSearching && (
             <View style={styles.scannedInfo}>
               <Text style={styles.scannedText}>
                 Last scanned: {barcodeData}
@@ -384,4 +468,4 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 25,
   },
-}); 
+});
