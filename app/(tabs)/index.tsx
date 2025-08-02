@@ -70,7 +70,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Text style={styles.userName}>Abhiram</Text>
-            <Text style={styles.welcomeText}>Welcome to TruthIn</Text>
+            <Text style={styles.welcomeText}>Welcome to Really</Text>
           </View>
           <View style={styles.headerRight}>
             <View style={styles.profileContainer}>

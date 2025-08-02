@@ -75,7 +75,7 @@ export default function CategoryScreen() {
             <View style={styles.upgradeCard}>
               <Text style={styles.upgradeTitle}>Get personalised insights that fit you.</Text>
               <TouchableOpacity style={styles.upgradeButton}>
-                <Text style={styles.upgradeButtonText}>Unlock TruthIn Plus</Text>
+                <Text style={styles.upgradeButtonText}>Unlock Really Plus</Text>
               </TouchableOpacity>
             </View>
 

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "react-app",
-    "slug": "react-app",
+    "name": "Really",
+    "slug": "really",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "reactapp",
+    "scheme": "really",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

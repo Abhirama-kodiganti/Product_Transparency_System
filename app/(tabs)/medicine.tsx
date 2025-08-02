@@ -1,19 +1,19 @@
-import { Feather, Ionicons } from "@expo/vector-icons"
-import { Link } from "expo-router"
+import { Feather, Ionicons } from "@expo/vector-icons";
+import { Link } from "expo-router";
+import React, { useState } from "react";
 import {
-  Image,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Alert,
-} from "react-native"
-import React, { useState } from "react"
-import { MEDICINE_DB , Medicine } from './Medical_DB';
+    Alert,
+    Image,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { MEDICINE_DB, Medicine } from '../../constants/Medical_DB';
 
 
 
@@ -132,7 +132,7 @@ export default function MedicineScreen() {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Text style={styles.userName}>Abhiram</Text>
-            <Text style={styles.welcomeText}>Welcome to TruthIn</Text>
+            <Text style={styles.welcomeText}>Welcome to Really</Text>
           </View>
           <View style={styles.headerRight}>
             <View style={styles.profileContainer}>

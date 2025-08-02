@@ -1,7 +1,6 @@
 // db.js
 const mongoose = require('mongoose');
-
-const MONGO_URI = 'mongodb+srv://Abhiramk:Pocom2%402004@cluster0.ugwhb.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0';
+const { MONGO_URI } = require('./config');
 
 mongoose
   .connect(MONGO_URI, {
