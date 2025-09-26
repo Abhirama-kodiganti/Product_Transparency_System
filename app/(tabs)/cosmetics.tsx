@@ -73,15 +73,15 @@ export default function CosmeticsScreen() {
           <View style={styles.picksContainer}>
             <View style={styles.pickCard}>
               <View>
-                <Text style={styles.pickTitle}>Mindful{"\n"}Munch</Text>
+                <Text style={styles.pickTitle}>Glow{"\n"}Essentials</Text>
               </View>
-              <Image source={{ uri: "https://i.imgur.com/K4yd36A.png" }} style={styles.pickImage} />
+              <Image source={{ uri: "https://i.pinimg.com/1200x/a4/b3/2c/a4b32cd37fe589a897ba528a976eca63.jpg" }} style={styles.pickImage} />
             </View>
             <View style={styles.pickCard}>
               <View>
-                <Text style={styles.pickTitle}>Feel-Good{"\n"}Sips</Text>
+                <Text style={styles.pickTitle}>Radiant{"\n"}Touch</Text>
               </View>
-              <Image source={{ uri: "https://i.imgur.com/9d2ETiT.png" }} style={styles.pickImage} />
+              <Image source={{ uri: "https://i.pinimg.com/736x/eb/f8/ec/ebf8ec7338db116f526425b2cfe0a1a8.jpg" }} style={styles.pickImage} />
             </View>
           </View>
         </View>
@@ -92,16 +92,20 @@ export default function CosmeticsScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.categoriesGrid}>
               <View style={styles.categoryItem}>
-                <Image source={{ uri: "https://i.imgur.com/AmJz0tp.png" }} style={styles.categoryImage} />
+                <Image source={{ uri: "https://i.pinimg.com/736x/84/f6/09/84f60949f475f5c1eb18bcefbd62c87.jpg" }} style={styles.categoryImage} />
+                <Text style={styles.categoryLabel}>Hair care</Text>
               </View>
               <View style={styles.categoryItem}>
-                <Image source={{ uri: "https://i.imgur.com/BVb2w2g.png" }} style={styles.categoryImage} />
+                <Image source={{ uri: "https://i.pinimg.com/1200x/a4/3b/0c/a43b0c98595522304b7bd5bf5162e53c.jpg" }} style={styles.categoryImage} />
+                <Text style={styles.categoryLabel}>Skin care</Text>
               </View>
               <View style={styles.categoryItem}>
-                <Image source={{ uri: "https://i.imgur.com/dK4L9y2.png" }} style={styles.categoryImage} />
+                <Image source={{ uri: "https://i.pinimg.com/1200x/17/aa/49/17aa4993f9bc8bba0c2719bef7d57785.jpg" }} style={styles.categoryImage} />
+                <Text style={styles.categoryLabel}>Body care</Text>
               </View>
               <View style={styles.categoryItem}>
-                <Image source={{ uri: "https://i.imgur.com/GfVpBns.png" }} style={styles.categoryImage} />
+                <Image source={{ uri: "https://i.pinimg.com/736x/9a/41/e2/9a41e2a598d074ca33b88a454cafb83e.jpg" }} style={styles.categoryImage} />
+                <Text style={styles.categoryLabel}>All up glam</Text>
               </View>
             </View>
           </ScrollView>
@@ -373,6 +377,11 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 15,
+  },
+  categoryLabel: {
+    marginTop: 8,
+    fontSize: 12,
+    color: "#333",
   },
   bottomSpacing: {
     height: 100,

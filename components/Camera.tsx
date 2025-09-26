@@ -3,6 +3,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import { useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { OCR_URL } from '../constants/Api';
 
 export default function Camera() {
   const [facing, setFacing] = useState<CameraType>('back');
@@ -52,8 +53,7 @@ export default function Camera() {
     } as any);
 
     try {
-      // IMPORTANT: Replace with your computer's local IP address
-      const response = await fetch('http://192.168.29.69:3000/upload', {
+      const response = await fetch(`${OCR_URL}/upload`, {
         method: 'POST',
         body: formData,
         headers: {

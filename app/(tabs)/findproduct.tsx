@@ -3,6 +3,7 @@ import * as Location from 'expo-location';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Button, FlatList, KeyboardAvoidingView, Linking, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MapPreview from '../../components/MapPreview';
+import { BACKEND_URL } from '../../constants/Api';
 
 interface Sighting {
   _id?: string;
@@ -20,7 +21,7 @@ interface Suggestion {
   // other fields can be added if needed
 }
 
-const BACKEND_URL = 'http://192.168.29.69:4000';
+// Uses `constants/Api` which derives host automatically or from EXPO_PUBLIC_BACKEND_URL
 const LOCATIONIQ_TOKEN = 'pk.b02ebfedceebcea0b417b4b737b2fdac'; // TODO: Replace with your actual LocationIQ token
 
 const FindProductScreen = () => {

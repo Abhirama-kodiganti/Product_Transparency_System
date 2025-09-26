@@ -59,7 +59,9 @@ export const getBarcodeTypeName = (type: string): string => {
 
 export const searchProductByBarcode = async (barcodeData: string): Promise<ProductInfo> => {
   try {
-    const response = await fetch(`http://192.168.29.69:4000/product/${barcodeData}`);
+    // Use centralized API base URL
+    const { BACKEND_URL } = await import('../constants/Api');
+    const response = await fetch(`${BACKEND_URL}/product/${barcodeData}`);
     const data = await response.json();
     
     if (!response.ok) {
