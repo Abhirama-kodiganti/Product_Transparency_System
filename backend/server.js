@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const mongoose = require('mongoose');
-const Sighting = require('./db');
+const { Sighting, UserPreference } = require('./db');
 
 
 const app = express();
@@ -160,6 +160,137 @@ app.get('/product/:barcodeNumber', async (req, res) => {
     res.status(500).json({ 
       success: false,
       message: 'Failed to fetch product information from Open Food Facts.',
+      error: error.message,
+      barcode: req.params.barcodeNumber
+    });
+  }
+});
+
+// User preferences - fetch existing
+app.get('/user-preferences/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'Missing userId' });
+    }
+
+    const preference = await UserPreference.findOne({ userId });
+    if (!preference) {
+      return res.status(404).json({ success: false, message: 'No preferences found for user' });
+    }
+
+    res.json({ success: true, preference });
+  } catch (error) {
+    console.error('Error fetching user preferences:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch user preferences', error: error.message });
+  }
+});
+
+// User preferences - create/update
+app.post('/user-preferences', async (req, res) => {
+  try {
+    const {
+      userId,
+      name,
+      age,
+      skin_type,
+      skin_concern,
+      hair_type,
+      hair_concern,
+      allergens,
+      ingredients,
+      vegan,
+      fragrance_free,
+      budget
+    } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'userId is required' });
+    }
+
+    const preferencePayload = {
+      userId,
+      name,
+      age,
+      skin_type,
+      skin_concern,
+      hair_type,
+      hair_concern,
+      allergens,
+      ingredients,
+      vegan,
+      fragrance_free,
+      budget
+    };
+
+    const preference = await UserPreference.findOneAndUpdate(
+      { userId },
+      { $set: preferencePayload },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    res.json({ success: true, preference });
+  } catch (error) {
+    console.error('Error saving user preferences:', error);
+    res.status(500).json({ success: false, message: 'Failed to save user preferences', error: error.message });
+  }
+});
+
+// User preferences - delete
+app.delete('/user-preferences/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'Missing userId' });
+    }
+
+    const deletion = await UserPreference.findOneAndDelete({ userId });
+    if (!deletion) {
+      return res.status(404).json({ success: false, message: 'No preference found to delete' });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting user preferences:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete user preferences', error: error.message });
+  }
+});
+
+// GET /cosmetic/:barcodeNumber - Open Beauty Facts lookup
+app.get('/cosmetic/:barcodeNumber', async (req, res) => {
+  try {
+    const barcodeNumber = req.params.barcodeNumber;
+    const apiUrl = `https://world.openbeautyfacts.org/api/v2/product/${barcodeNumber}.json`;
+    console.log(`Searching for cosmetic barcode: ${barcodeNumber}`);
+
+    const response = await axios.get(apiUrl, { timeout: 7000 });
+    const productDetails = response.data;
+
+    if (!productDetails || !productDetails.product) {
+      return res.status(404).json({
+        success: false,
+        message: `Product not found in Open Beauty Facts database for barcode ${barcodeNumber}.`,
+        barcode: barcodeNumber
+      });
+    }
+
+    res.json({
+      success: true,
+      product: productDetails.product,
+      barcode: barcodeNumber
+    });
+  } catch (error) {
+    if (error.code === 'ECONNABORTED' || error.message.includes('Network')) {
+      return res.status(503).json({
+        success: false,
+        message: 'Network error: Unable to reach Open Beauty Facts. Please try again later.',
+        barcode: req.params.barcodeNumber
+      });
+    }
+    console.error('Error fetching cosmetic product:', error.message);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch product information from Open Beauty Facts.',
       error: error.message,
       barcode: req.params.barcodeNumber
     });

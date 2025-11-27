@@ -1,7 +1,9 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, Image, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { BACKEND_URL } from "@/constants/Api";
 import openfoodfacts from '../../openfoodfacts_india.json';
 
 // Pretty name mapping for categories
@@ -29,13 +31,46 @@ const CATEGORY_PRETTY_NAMES: Record<string, string> = {
 
 // Placeholder image for new categories
 const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/120x120.png?text=Food';
+const DEFAULT_USER_ID = "default-user";
 
 export default function HomeScreen() {
   const [categories, setCategories] = useState<string[]>([]);
+  const [showPreferencePrompt, setShowPreferencePrompt] = useState(false);
+  const [userPreferences, setUserPreferences] = useState<any | null>(null);
+  const [isPreferenceLoading, setIsPreferenceLoading] = useState(false);
+  const [promptDismissed, setPromptDismissed] = useState(false);
 
   useEffect(() => {
     setCategories(Object.keys(openfoodfacts));
   }, []);
+
+  const fetchUserPreferences = useCallback(() => {
+    setIsPreferenceLoading(true);
+    fetch(`${BACKEND_URL}/user-preferences/${DEFAULT_USER_ID}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          setUserPreferences(data.preference);
+          setShowPreferencePrompt(false);
+          setPromptDismissed(true);
+        } else if (res.status === 404) {
+          setUserPreferences(null);
+          setShowPreferencePrompt(!promptDismissed);
+        } else {
+          setUserPreferences(null);
+        }
+      })
+      .catch(() => {
+        setUserPreferences(null);
+      })
+      .finally(() => setIsPreferenceLoading(false));
+  }, [promptDismissed]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserPreferences();
+    }, [fetchUserPreferences])
+  );
 
   const handleScanPress = () => {
     Alert.alert(
@@ -62,6 +97,26 @@ export default function HomeScreen() {
     );
   };
 
+  const handlePreferenceChoice = (choice: 'yes' | 'no') => {
+    setShowPreferencePrompt(false);
+    if (choice === 'yes') {
+      setPromptDismissed(true);
+      router.push({ pathname: '/recommendation-form', params: { userId: DEFAULT_USER_ID } } as any);
+    } else {
+      setPromptDismissed(true);
+    }
+    // If "no", we simply keep them on the default Food home screen
+  };
+
+  const handleProfilePress = () => {
+    if (userPreferences) {
+      router.push({ pathname: '/recommendation-form', params: { userId: DEFAULT_USER_ID } } as any);
+    } else {
+      setPromptDismissed(false);
+      setShowPreferencePrompt(true);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
@@ -73,14 +128,16 @@ export default function HomeScreen() {
             <Text style={styles.welcomeText}>Welcome to Really</Text>
           </View>
           <View style={styles.headerRight}>
-            <View style={styles.profileContainer}>
+            <TouchableOpacity style={styles.profileContainer} onPress={handleProfilePress} activeOpacity={0.75}>
               <View style={styles.avatar}>
                 <Feather name="user" size={24} color="#6366f1" />
               </View>
-              <View style={styles.planBadge}>
-                <Text style={styles.planText}>Basic</Text>
+              <View style={[styles.planBadge, userPreferences && styles.planBadgeActive]}>
+                <Text style={[styles.planText, userPreferences && styles.planTextActive]}>
+                  {userPreferences ? 'Personalized' : 'Basic'}
+                </Text>
               </View>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -195,6 +252,32 @@ export default function HomeScreen() {
         <View style={styles.bottomSpacing} />
       </ScrollView>
 
+      {/* On-load preference prompt */}
+      {showPreferencePrompt && !isPreferenceLoading && (
+        <View style={styles.preferenceOverlay}>
+          <View style={styles.preferenceCard}>
+            <Text style={styles.preferenceTitle}>Modify according to your needs?</Text>
+            <Text style={styles.preferenceSubtitle}>
+              Answer a few quick questions so we can personalize food and cosmetics recommendations for you.
+            </Text>
+            <View style={styles.preferenceButtonsRow}>
+              <TouchableOpacity
+                style={[styles.preferenceButton, styles.preferenceNoButton]}
+                onPress={() => handlePreferenceChoice('no')}
+              >
+                <Text style={[styles.preferenceButtonText, styles.preferenceNoButtonText]}>No, continue</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.preferenceButton, styles.preferenceYesButton]}
+                onPress={() => handlePreferenceChoice('yes')}
+              >
+                <Text style={styles.preferenceButtonText}>Yes, customize</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
+
       {/* Bottom Tab Bar */}
       <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem}>
@@ -277,10 +360,16 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
   },
+  planBadgeActive: {
+    backgroundColor: "#6366f1",
+  },
   planText: {
     color: "#fff",
     fontSize: 12,
     fontWeight: "bold",
+  },
+  planTextActive: {
+    color: "#fff",
   },
   searchContainer: {
     flexDirection: "row",
@@ -472,6 +561,68 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 100,
+  },
+  preferenceOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(15, 23, 42, 0.45)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  preferenceCard: {
+    width: "100%",
+    maxWidth: 420,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 22,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  preferenceTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#111827",
+    marginBottom: 6,
+  },
+  preferenceSubtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginBottom: 18,
+  },
+  preferenceButtonsRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  preferenceButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  preferenceNoButton: {
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FFFFFF",
+    marginRight: 8,
+  },
+  preferenceYesButton: {
+    borderColor: "#6366F1",
+    backgroundColor: "#6366F1",
+  },
+  preferenceButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#FFFFFF",
+  },
+  preferenceNoButtonText: {
+    color: "#374151",
   },
   tabBar: {
     flexDirection: "row",

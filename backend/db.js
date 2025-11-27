@@ -19,6 +19,25 @@ const sightingSchema = new mongoose.Schema({
   available: { type: Boolean, default: true },
 });
 
-const Sighting = mongoose.model('Sighting', sightingSchema);
+const userPreferenceSchema = new mongoose.Schema(
+  {
+    userId: { type: String, required: true, unique: true },
+    name: { type: String },
+    age: { type: Number },
+    skin_type: { type: String },
+    skin_concern: { type: String },
+    hair_type: { type: String },
+    hair_concern: { type: String },
+    allergens: { type: String },
+    ingredients: { type: String },
+    vegan: { type: String },
+    fragrance_free: { type: String },
+    budget: { type: String },
+  },
+  { timestamps: true }
+);
 
-module.exports = Sighting;
+const Sighting = mongoose.model('Sighting', sightingSchema);
+const UserPreference = mongoose.model('UserPreference', userPreferenceSchema);
+
+module.exports = { Sighting, UserPreference };
